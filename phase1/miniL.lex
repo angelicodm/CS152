@@ -3,20 +3,20 @@
 %{   
    /* write your C code here for definitions of variables and including headers */
    int currLine = 1, currPos = 1;
-   // int numIntegers = 0; /these commented out ints are unlikely to be 
-   // int numOperators = 0; /used in the actual compiler but included anyway
-   // int numParens = 0;
-   // int numEquals = 0;
+
 %}
 
    /* some common rules */
 DIGIT    [0-9]
 
-CHAR     [a-zA-Z]
+COMMENT ##.*
 
-COMMENT ##.*      //Should take care of comments
+   /* specific lexer rules in regex */
 
-   /* Reserved Words */
+%%
+
+   /* Reserved Words bingus */
+
 "function"          {printf("FUNCTION\n"); currPos += yyleng;}
 "beginparams"       {printf("BEGIN_PARAMS\n"); currPos += yyleng;}
 "endparams"         {printf("END_PARAMS\n"); currPos += yyleng;}
@@ -30,7 +30,7 @@ COMMENT ##.*      //Should take care of comments
 "of"                {printf("OF\n"); currPos += yyleng;}
 "if"                {printf("IF\n"); currPos += yyleng;}
 "then"              {printf("THEN\n"); currPos += yyleng;}
-"endif"             {printf("ENDIF\n"); currPos += yyleng;}
+"endif"             {printf("ENDIF\n"); currPos += yyleng;} 
 "else"              {printf("ELSE\n"); currPos += yyleng;}
 "for"               {printf("FOR\n"); currPos += yyleng;}
 "while"             {printf("WHILE\n"); currPos += yyleng;}
@@ -72,18 +72,25 @@ COMMENT ##.*      //Should take care of comments
 "]"           {printf("R_SQUARE_BRACKET\n"); currPos += yyleng;}
 ":="           {printf("ASSIGN\n"); currPos += yyleng;}
 
+
+
+
    /* Identifiers and Numbers*/ 
-   
-(\.{DIGIT}+)|({DIGIT}+(\.{DIGIT}*)?([eE][+-]?[0-9]+)?)      {printf("NUMBER %s\n", yytext); currPos += yyleng;}
+[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*         {printf("IDENT %s\n", yytext); currPos += yyleng;}
+(\.{DIGIT}+)|({DIGIT}+(\.{DIGIT}*)?([eE][+-]?[0-9]+)?)      {printf("NUMBER %s\n", yytext); currPos += yyleng;} //should accomodate for all instances of numbers
 
 
-[ \t]+         {/* ignore spaces */ currPos += yyleng;} //whitespace
+[ \t]+         {/* ignore spaces */ currPos += yyleng;} 
 
-"\n"           {currLine++; currPos = 1;} //newline
+"\n"           {currLine++; currPos = 1;} 
 
-%%
-   /* specific lexer rules in regex */
+{COMMENT}      	{currLine++; currPos = 1;}
 
+
+
+.              {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}  //Error 1: Unrecognized symbol
+[0-9_][a-zA-Z0-9_]*		      {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); exit(0);}  //Error 2: Invalid Identifier
+[a-zA-Z][a-zA-Z0-9_]*[_]   {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); exit(0);}  //Error 2: Invalid Identifier
 
 
 %%

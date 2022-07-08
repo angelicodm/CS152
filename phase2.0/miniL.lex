@@ -1,22 +1,23 @@
-   /* cs152-miniL phase1 */
-   
+/* cs152-miniL phase1 */
+
 %{   
    /* write your C code here for definitions of variables and including headers */
-   #include "ytab.h"
+   #include "y.tab.h"
    int currLine = 1, currPos = 1;
 
 %}
 
-   /* some common rules */
-DIGIT    [0-9]
-
+/* some common rules */
+DIGIT    [0-9]+
+VAR [a-zA-Z][a-zA-Z_0-9]*
+/*ERR [_0-9]-DIGIT*/
 COMMENT ##.*
 
-   /* specific lexer rules in regex */
+/* specific lexer rules in regex */
 
 %%
 
-   /* Reserved Words bingus */
+   /* Reserved Words */
 
 "function"          {return FUNCTION; currPos += yyleng;}
 "beginparams"       {return BEGIN_PARAMS; currPos += yyleng; }
@@ -40,7 +41,7 @@ COMMENT ##.*
 "endloop"           {return ENDLOOP; currPos += yyleng; }
 "continue"          {return CONTINUE; currPos += yyleng; }
 "read"              {return READ; currPos += yyleng; }
-"write"             {return Write; currPos += yyleng; }
+"write"             {return WRITE; currPos += yyleng; }
 "and"               {return AND; currPos += yyleng; }
 "or"                {return OR; currPos += yyleng; }
 "not"               {return NOT; currPos += yyleng; }
@@ -77,9 +78,15 @@ COMMENT ##.*
 
 
    /* Identifiers and Numbers*/ 
-[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*         {currPos += yyleng;}
-(\.{DIGIT}+)|({DIGIT}+(\.{DIGIT}*)?([eE][+-]?[0-9]+)?)      {printf("NUMBER %s\n", yytext); currPos += yyleng;} //should accomodate for all instances of numbers
 
+{VAR}[_]+   {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); exit(0);}
+[_0-9]+{VAR}+  {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); exit(0);}
+{VAR}+   {yylval.id_val = strdup(yytext); currPos += yyleng; return IDENT;}
+{DIGIT} {yylval.num_val = atoi(yytext); currPos += yyleng; return NUMBER;}
+
+ /*[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*         {currPos += yyleng;}
+ (\.{DIGIT}+)|({DIGIT}+(\.{DIGIT}*)?([eE][+-]?[0-9]+)?)      {printf("NUMBER %s\n", yytext); currPos += yyleng;} //should accomodate for all instances of numbers
+ */
 
 [ \t]+         {/* ignore spaces */ currPos += yyleng;} 
 
@@ -89,10 +96,9 @@ COMMENT ##.*
 
 
 
-.              {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}  //Error 1: Unrecognized symbol
-[0-9_][a-zA-Z0-9_]*		      {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); exit(0);}  //Error 2: Invalid Identifier
-[a-zA-Z][a-zA-Z0-9_]*[_]   {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); exit(0);}  //Error 2: Invalid Identifier
 
+
+.              {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}  //Error 1: Unrecognized symbol
 
 %%
 	/* C functions used in lexer */

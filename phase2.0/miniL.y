@@ -81,22 +81,75 @@ relation_and_exp:       relation_exp {printf("relation_and_exp -> relation_exp\n
         | relation_exp AND relation_and_exp {printf("relation_and_exp -> relation_exp AND relation_and_exp\n");}
         ;
 
-relation_exps:   NOT relation_exp {printf("relation_exps -> relation_exp\n");}
-        | relation_exp {printf("relation_exps -> relation_exp\n");}
-        ;
-
 relation_exp:   expression comp expression {printf("relation_exp -> expression comp expression\n");}
         | TRUE {printf("relation_exp -> TRUE\n");}
         | FALSE {printf("relation_exp -> FALSE\n");}
+        | L_PAREN bool_exp R_PAREN {printf("relation_exp -> L_PAREN bool_exp R_PAREN\n");}
+        | NOT expression comp  expression {printf("relation_exp -> NOT expression comp expression\n");}
+        | NOT TRUE {printf("relation_exp -> NOT TRUE\n");}
+        | NOT FALSE {printf("relation_exp -> NOT FALSE\n");}
+        | NOT L_PAREN bool_exp R_PAREN {printf("relation_exp -> NOT L_PAREN bool_exp R_PARENT\n");}
+        ;
+
+comp:           EQ {printf("comp -> EQ\n");}
+        | NEQ {printf("comp -> NEQ\n");}
+        | LT {printf("comp -> LT\n");}
+        | GT {printf("comp -> GT\n");}
+        | LTE {printf("comp -> LTE\n");}
+        | GTE {printf("comp -> GTE\n");}
+        ;
+
+expression:     mult_exp {printf("expression -> mult\n");}
+        | mult_exp ADD expression {printf("expression -> mult_exp ADD expression\n");}
+        | mult_exp SUB expression {printf("expression -> mult_exp SUB expression\n");}
+        ;
+
+mult_exp: term {printf("mult_exp -> term\n");}
+        | term MULT mult_exp {printf("mult_exp -> term MULT mult_exp\n");}
+        | term DIV mult_exp {printf("mult_exp -> term DIV mult_exp\n");}
+        | term MOD mult_exp {printf("mult_exp -> term MOD mult_exp\n");}
+        ;
+
+term:   var {printf("term -> var\n");}
+        | NUMBER {printf("term -> NUMBER %d\n", $1);}
+        | L_PAREN expression R_PAREN {printf("term -> L_PAREN expression R_PAREN\n");}
+        | SUB var {printf("term -> SUB var\n");}
+        | SUB NUMBER {printf("term -> SUB NUMBER %d\n", $2);}
+        | SUB L_PAREN expression R_PAREN {printf("term -> SUB L_PAREN expression R_PAREN\n");}
+        | ident L_PAREN expressions R_PAREN {printf("term -> ident L_PAREN expressions R_PAREN\n");}
+        ;
+
+var:    ident {printf("var -> ident\n");}
+        | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {printf("var -> ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
+        ;
+
+vars:   /*empty*/ {printf("vars -> epsilon\n");}
+        | var COMMA vars {printf("vars -> var COMMA vars\n");}
+        ;
+
+expressions:    /*empty*/ {printf("expressions -> epsilon\n");}
+        | expression COMMA expressions {printf("expressions -> expression COMMA expressions\n");}
+        ;
+
 
 
 %% 
 
 int main(int argc, char **argv) {
+   if(argc > 1)
+   {
+        yyin = fopen(argv[1], "r");
+        if(yyin == NULL)
+        {
+                printf("syntax: %s filename", argv[0]);
+        }
+   }
    yyparse();
    return 0;
 }
 
-void yyerror(const char *msg) {
+void yyerror(const char *msg) 
+{
     /* implement your error handling */
+    printf("Error: Line %d, position %d: %s \n", currLine, currPos, msg;)
 }

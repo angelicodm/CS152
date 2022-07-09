@@ -17,6 +17,7 @@ char* id_val;
 %error-verbose
 %start prog_start
 %token FUNCTION BEGIN_PARAMS END_PARAMS BEGIN_LOCALS END_LOCALS BEGIN_BODY END_BODY INTEGER ARRAY OF IF THEN ENDIF ELSE WHILE FOR DO BEGINLOOP ENDLOOP CONTINUE READ WRITE TRUE FALSE SEMICOLON COLON COMMA L_PAREN R_PAREN L_SQUARE_BRACKET R_SQUARE_BRACKET RETURN
+%token ENUM
 %token <id_val> IDENT
 %token <num_val> NUMBER
 %right ASSIGN
@@ -48,27 +49,28 @@ declarations: /*empty*/ {printf("declarations -> epsilon\n"); }
 
 declaration:    identifiers COLON INTEGER {printf("declaration -> identifiers COLON INTEGER\n");}
         | identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("declaration -> identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER %d R_SQUARE_BRACKET OF INTEGER\n", $5);}
+        | identifiers COLON ENUM L_PAREN identifiers R_PAREN {printf("declaration -> identifiers COLON ENUM L_PAREN identifiers R_PAREN");}
         ;
 
-identifiers:    ident {printf("identifiers -> ident\n";)}
+identifiers:    ident {printf("identifiers -> ident\n");}
         | ident COMMA identifiers {printf("identifiers -> ident COMMA identifiers\n");}
         ;
 
-ident:  IDENT {printf("ident -> IDENT\n", $1);}
+ident:  IDENT {printf("ident -> IDENT %s \n", $1);}
         ;
 
 statements:     /*empty*/ {printf("statements -> epsilon\n");}
         | statement SEMICOLON statements {printf("statements -> statement SEMICOLON statements\n");}
         ;
 
-statement:      var ASSIGN expression {printf("statement -> var ASSIGN expression\n";)}
+statement:      var ASSIGN expression {printf("statement -> var ASSIGN expression\n");}
         | IF bool_exp THEN statements ENDIF {printf("statement -> IF bool_exp THEN statements ENDIF\n");}
         | IF bool_exp THEN statements ELSE statements ENDIF {printf("statement -> IF bool_exp THEN statements ELSE statements ENDIF");}
         | WHILE bool_exp BEGINLOOP statements ENDLOOP {printf("statement-> WHILE bool_exp BEGINLOOP statements ENDLOOP\n");}
         | DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
-        | FOR vars ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON vars ASSIGN expression BEGINLOOP statements ENDLOOP {printf(" FOR vars ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON vars ASSIGN expression BEGINLOOP statements ENDLOOP\n");}
-        | READ vars {printf("statement -> READ vars\n");}
-        | WRITE vars {printf("statement -> WRITE vars\n");}
+        | FOR var varLoop ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON var varLoop ASSIGN expression BEGINLOOP statements ENDLOOP {printf(" FOR vars ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON vars ASSIGN expression BEGINLOOP statements ENDLOOP\n");}
+        | READ var varLoop {printf("statement -> READ vars\n");}
+        | WRITE var varLoop {printf("statement -> WRITE vars\n");}
         | CONTINUE {printf("statement -> CONTINUE\n");}
         | RETURN expression {printf("statement -> RETURN expression\n");}
         ;
@@ -99,7 +101,7 @@ comp:           EQ {printf("comp -> EQ\n");}
         | GTE {printf("comp -> GTE\n");}
         ;
 
-expression:     mult_exp {printf("expression -> mult\n");}
+expression:     mult_exp {printf("expression -> mult_exp\n");}
         | mult_exp ADD expression {printf("expression -> mult_exp ADD expression\n");}
         | mult_exp SUB expression {printf("expression -> mult_exp SUB expression\n");}
         ;
@@ -123,8 +125,8 @@ var:    ident {printf("var -> ident\n");}
         | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {printf("var -> ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
         ;
 
-vars:   /*empty*/ {printf("vars -> epsilon\n");}
-        | var COMMA vars {printf("vars -> var COMMA vars\n");}
+varLoop:           /*empty*/ {printf("vars -> epsilon\n");}
+        | COMMA var varLoop {printf("vars -> var COMMA vars\n");}
         ;
 
 expressions:    /*empty*/ {printf("expressions -> epsilon\n");}
@@ -151,5 +153,5 @@ int main(int argc, char **argv) {
 void yyerror(const char *msg) 
 {
     /* implement your error handling */
-    printf("Error: Line %d, position %d: %s \n", currLine, currPos, msg;)
+    printf("Error: Line %d, position %d: %s \n", currLine, currPos, msg);
 }

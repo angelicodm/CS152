@@ -1,23 +1,25 @@
-/* cs152-miniL phase1 */
+   /* cs152-miniL phase1 */
+      /* cs152-miniL phase1 */
+%{
+/* write your C code here for definitions of variables and including headers */
 
-%{   
-   /* write your C code here for definitions of variables and including headers */
-   #include "y.tab.h"
-   int currLine = 1, currPos = 1;
+#include "y.tab.h"
+int currLine = 1, currPos = 1;
 
 %}
 
-/* some common rules */
-DIGIT    [0-9]+
-VAR [a-zA-Z][a-zA-Z_0-9]*
-/*ERR [_0-9]-DIGIT*/
+ /* some common rules */
+
+DIGIT   [0-9]
+                                /*if he hears he'll knock all day*/
 COMMENT ##.*
 
-/* specific lexer rules in regex */
+
 
 %%
 
-   /* Reserved Words */
+   /* specific lexer rules in regex */
+        /* who can it be knocking at my door*/
 
 "function"          {return FUNCTION; currPos += yyleng;}
 "beginparams"       {return BEGIN_PARAMS; currPos += yyleng; }
@@ -56,7 +58,9 @@ COMMENT ##.*
 "/"            {currPos += yyleng; return DIV;}
 "%"            {currPos += yyleng; return MOD;}
 
-   /* Comparison Operators */ 
+
+
+   /*^^^no underscore  Comparison Operators */ 
 "=="           {currPos += yyleng; return EQ;}
 "<>"           {currPos += yyleng; return NEQ;}
 "<"            {currPos += yyleng; return LT;}
@@ -75,47 +79,53 @@ COMMENT ##.*
 ":="           {currPos += yyleng; return ASSIGN;}
 
 
+        /* make no sound, tip-toe across the floor*/
+	
 
+(\.{DIGIT}+)|({DIGIT}+(\.{DIGIT}*)?([eE][+-]?[0-9]+)?)        {yylval.num_val = atoi(yytext); currPos += yyleng; return NUMBER;}
 
-   /* Identifiers and Numbers*/ 
+	
 
-{VAR}[_]+   {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); exit(0);}
-[_0-9]+{VAR}+  {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); exit(0);}
-{VAR}+   {yylval.id_val = strdup(yytext); currPos += yyleng; return IDENT;}
-{DIGIT} {yylval.num_val = atoi(yytext); currPos += yyleng; return NUMBER;}
+[ \t]+          {/* ignore spaces */ currPos += yyleng;}
 
- /*[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*         {currPos += yyleng;}
- (\.{DIGIT}+)|({DIGIT}+(\.{DIGIT}*)?([eE][+-]?[0-9]+)?)      {printf("NUMBER %s\n", yytext); currPos += yyleng;} //should accomodate for all instances of numbers
- */
-
-[ \t]+         {/* ignore spaces */ currPos += yyleng;} 
-
-"\n"           {currLine++; currPos = 1;} 
+        /* I'll be trapped and here I'll have to stay */
 
 {COMMENT}      	{currLine++; currPos = 1;}
 
+	
 
+[a-zA-Z]([a-zA-Z0-9_]*[a-zA-Z0-9])*         {yylval.id_val = strdup(yytext); currPos += yyleng; return IDENT;}
 
+	
 
+[0-9_][a-zA-Z0-9_]*		{printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); exit(0);}
 
-.              {printf("Error at line %d, column %d: unrecognized symbol \"%s\"\n", currLine, currPos, yytext); exit(0);}  //Error 1: Unrecognized symbol
+[a-zA-Z][a-zA-Z0-9_]*[_]	{printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); exit(0);}
+
+        /* Here they come, THOSE FEELINGS AGAIN*/
+
+"\n"            {currLine++; currPos = 1;}
+
+.               {printf("Error at line %d, column %d: unrecognized symbol \"%s\" \n", currLine, currPos, yytext); exit(0);}
 
 %%
-	/* C functions used in lexer */
 
-/*int main(int argc, char ** argv)
+        /* C functions used in lexer */
+/* dont need?
+int main(int argc, char ** argv)
 {
-   if(argc >= 2)
-   {
-      yyin = fopen(argv[1], "r");
-      if(yyin == NULL)
-      {
-         yyin = stdin;
-      }
-   }
-   else
-   {
-      yyin = stdin;
-   }
-   yylex();
-}*/
+        if(argc >= 2)
+        {
+                yyin = fopen(argv[1], "r");
+                if(yyin == NULL)
+                {
+                        yyin = stdin; //take input directly from terminal run line (text file)
+                }
+        }
+        else
+        {
+                yyin = stdin;
+        }
+        yylex();        //who can it be now?
+}
+*/

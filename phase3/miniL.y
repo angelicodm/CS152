@@ -71,7 +71,68 @@ std::string new_label();
 %% 
 
   /* write your rules here */
-program: DIGIT {}
+program: %empty
+        {
+          if(!mainFunc)
+          {
+            printf("No main function declared!\n");
+          }
+        }
+        | function program 
+        { 
+        }
+        ;
+function: FUNCTION ident SEMICOLON BEGIN_PARAMS declarations END_PARAMS BEGIN_LOCALS declarations END_LOCALS BEGIN_BODY statements END_BODY
+        {
+          std::string temp = "func ";
+          temp.append($2.place);
+          temp.append("\n");
+          std::string s = $2.place;
+          if(s == "main")
+          {
+            mainFunc = true;
+          }
+          temp.append($5.code);
+          std::string decs = $5.code;
+          int decNum = 0;
+
+          while(decs.find(".") != std::string::npos)
+          {
+            int pos = decs.find(".");
+            decs.replace(pos, 1, "=");
+            std::string part = ", $" + std::to_string(decNum) + "\n";
+            decNum++;
+            decs.replace(decs.find("\n", pos), 1, part);
+          }
+
+          temp.append(decs);
+          temp.append($8.code);
+
+          std::string statements = $11.code;
+
+          if(statements.find("continue") != std::string::npos)
+          {
+            printf("ERROR: Continue outside loop in function %s\n", $2.place);
+          }
+
+          temp.append(statements);
+          temp.append("endfunc\n\n");
+        };
+
+declarations: declaration SEMICOLON declarations
+        {
+          std::string temp;
+          temp.append($1.code);
+          temp.append($3.code);
+
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup("");
+        }
+        | %empty
+        {
+          $$.code = strdup("");
+          $$.place = strdup("");
+        };
 
 %% 
 

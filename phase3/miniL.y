@@ -26,18 +26,47 @@
 void yyerror(const char *msg);
 extern int yylex();
 
+std::string new_temp();
+std::string new_label();
+
 #include "lib.h"
 
 %}
 
 %union {
   int int_val;
+  char* ident;
+  struct S 
+  {
+    char* code;
+  } statement;
+  struct E 
+  {
+    char* place;
+    char* code;
+    bool arr;
+  } expression;
 }
 
 %error-verbose
 
-%token<int_val> DIGIT
 %start program 
+
+%token <int_val> NUMBER
+%token <ident> IDENT
+%type <expression> function declarations declaration vars var expressions expression identifiers ident
+%type <expression> bool_exp relation_and_exp relation_exp comp mult_exp term
+%type <statement> statement statements
+
+%token FUNCTION BEGIN_PARAMS END_PARAMS BEGIN_LOCALS END_LOCALS BEGIN_BODY END_BODY INTEGER ARRAY OF IF THEN ENDIF ELSE WHILE FOR DO BEGINLOOP ENDLOOP CONTINUE READ WRITE TRUE FALSE SEMICOLON COLON COMMA L_PAREN R_PAREN L_SQUARE_BRACKET R_SQUARE_BRACKET RETURN
+%token ENUM
+%left ASSIGN
+%left OR
+%left AND
+%right NOT
+%left LT LTE GT GTE EQ NEQ
+%left ADD SUB
+%left MULT DIV MOD
 
 %% 
 

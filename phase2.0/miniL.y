@@ -68,9 +68,9 @@ statement:      var ASSIGN expression {printf("statement -> var ASSIGN expressio
         | IF bool_exp THEN statements ELSE statements ENDIF {printf("statement -> IF bool_exp THEN statements ELSE statements ENDIF");}
         | WHILE bool_exp BEGINLOOP statements ENDLOOP {printf("statement-> WHILE bool_exp BEGINLOOP statements ENDLOOP\n");}
         | DO BEGINLOOP statements ENDLOOP WHILE bool_exp {printf("statement -> DO BEGINLOOP statements ENDLOOP WHILE bool_exp\n");}
-        | FOR var varLoop ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON var varLoop ASSIGN expression BEGINLOOP statements ENDLOOP {printf(" FOR vars ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON vars ASSIGN expression BEGINLOOP statements ENDLOOP\n");}
-        | READ var varLoop {printf("statement -> READ vars\n");}
-        | WRITE var varLoop {printf("statement -> WRITE vars\n");}
+        | FOR var vars ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON var vars ASSIGN expression BEGINLOOP statements ENDLOOP {printf(" FOR vars ASSIGN NUMBER SEMICOLON bool_exp SEMICOLON vars ASSIGN expression BEGINLOOP statements ENDLOOP\n");}
+        | READ var vars {printf("statement -> READ vars\n");}
+        | WRITE var vars {printf("statement -> WRITE vars\n");}
         | CONTINUE {printf("statement -> CONTINUE\n");}
         | RETURN expression {printf("statement -> RETURN expression\n");}
         ;
@@ -118,19 +118,19 @@ term:   var {printf("term -> var\n");}
         | SUB var {printf("term -> SUB var\n");}
         | SUB NUMBER {printf("term -> SUB NUMBER %d\n", $2);}
         | SUB L_PAREN expression R_PAREN {printf("term -> SUB L_PAREN expression R_PAREN\n");}
-        | ident L_PAREN expressions R_PAREN {printf("term -> ident L_PAREN expressions R_PAREN\n");}
+        | ident L_PAREN expression expressions R_PAREN {printf("term -> ident L_PAREN expression expressions R_PAREN\n");}
         ;
 
 var:    ident {printf("var -> ident\n");}
         | ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET {printf("var -> ident L_SQUARE_BRACKET expression R_SQUARE_BRACKET\n");}
         ;
 
-varLoop:           /*empty*/ {printf("vars -> epsilon\n");}
-        | COMMA var varLoop {printf("vars -> var COMMA vars\n");}
+vars:           /*empty*/ {printf("vars -> epsilon\n");}
+        | COMMA var vars {printf("vars -> var COMMA vars\n");}
         ;
 
 expressions:    /*empty*/ {printf("expressions -> epsilon\n");}
-        | expression COMMA expressions {printf("expressions -> expression COMMA expressions\n");}
+        | COMMA expression expressions {printf("expressions -> expression COMMA expressions\n");}
         ;
 
 

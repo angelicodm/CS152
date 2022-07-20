@@ -175,8 +175,25 @@ bool_exp: relation_and_exp OR bool_exp
 
 relation_and_exp: relation_exp AND relation_and_exp
         {
-
+          std::string temp;
+          std::string dst = new_temp();
+          temp.append($1.code);
+          temp.append($3.code);
+          temp += ". " + dst + "\n";
+          temp += "&& " + dst + ", ";
+          temp.append($1.place);
+          temp.append(", ");
+          temp.append($3.place);
+          temp.append("\n");
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
         }
+        | relation_exp_inv
+        {
+          $$.code = strdup($1.code);
+          $$.place = strdup($1.place);
+        }
+        ;
 
 relation_exp_inv: NOT relation_exp_inv
         {
@@ -219,6 +236,12 @@ relation_exp: expression comp expression
           $$.code = strdup("");
           $$.place = strdup(temp.c_str());
         }
+        | L_PAREN bool_exp R_PAREN
+        {
+          $$.code = strdup($2.code);
+          $$.place = strdup($2.place);
+        }
+        ;
 
 comp: EQ
         {
@@ -250,6 +273,7 @@ comp: EQ
           $$.code = strdup("");
           $$.place = strdup(">= ");
         }
+        ;
 
 
 expression:  mult_exp ADD expression
@@ -274,13 +298,78 @@ expression:  mult_exp ADD expression
           temp.append($1.code);
           temp.append($3.code);
           temp += ". " + dst +"\n";
+          temp += "- " + dst + ", ";
+          temp.append($1.place);
+          temp += ", ";
+          temp.append($3.place);
+          temp += "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
         }
-        |
+        | mult_exp
+        {
+          $$.code = strdup($1.code);
+          $$.place = strdup($1.place);
+        }
+        ;
 
 mult_exp: term
         {
-
+          $$.code = strdup($1.code);
+          $$.place = strdup($1.place);
         }
+        | term MULT mult_exp
+        {
+          std::string temp;
+          std::string dst = new_temp();
+          temp.append($1.code);
+          temp.append($3.code);
+          temp.append(". ");
+          temp.append(dst);
+          temp.append("\n");
+          temp += "* " + dst + ", ";
+          temp.append($1.place);
+          temp += ", ";
+          temp.append($3.place);
+          temp += "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        | term DIV mult_exp
+        {
+          std::string temp;
+          std::string dst = new_temp();
+          temp.append($1.code);
+          temp.append($3.code);
+          temp.append(". ");
+          temp.append(dst);
+          temp.append("\n");
+          temp += "/ " + dst + ", ";
+          temp.append($1.place);
+          temp += ", ";
+          temp.append($3.place);
+          temp += "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        | term MOD mult_exp
+        {
+          std::string temp;
+          std::string dst = new_temp();
+          temp.append($1.code);
+          temp.append($3.code);
+          temp.append(". ");
+          temp.append(dst);
+          temp.append("\n");
+          temp += "% " + dst + ", ";
+          temp.append($1.place);
+          temp += ", ";
+          temp.append($3.place);
+          temp += "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        ;
       
 term: var
         {
@@ -400,6 +489,7 @@ term: var
           $$.code = strdup(temp.c_str());
           $$.place = strdup(dst.c_str());
         }
+        ;
 
 var: ident
         {
@@ -475,10 +565,28 @@ vars: var COMMA vars
         }
         ;
 
-expressions: COMMA expression expressions
+expressions: expression COMMA expressions
         {
-
+          std::string temp;
+          temp.append($1.code);
+          temp.append("param");
+          temp.append($1.place);
+          temp.append("\n");
+          temp.append($3.code);
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup("");
         }
+        | expression
+        {
+          std::string temp;
+          temp.append($1.code);
+          temp.append("param ");
+          temp.append($1.place);
+          temp.append("\n");
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup("");
+        }
+        ;
 %% 
 
 int main(int argc, char **argv) {

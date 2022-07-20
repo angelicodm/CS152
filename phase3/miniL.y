@@ -221,7 +221,7 @@ statements: statement SEMICOLON statements
           $$.code = strdup(temp.c_str());
           
         }
-        | %empty
+        | statement SEMICOLON
         {
           $$.code = strdup($1.code);       
         }
@@ -231,6 +231,62 @@ statement: var ASSIGN expression
         {
 
         }
+        {
+	   //who can it be knocking at my door??	
+	}
+	| IF bool_exp THEN statements ENDIF
+	{
+	  //make no sound... tip-toe across the floor...
+	}
+	| IF bool_exp THEN statements ELSE statements ENDIF
+	{
+	  //if he hears, he'll knock all day!
+	}
+	| WHILE bool_exp BEGINLOOP statements ENDLOOP
+	{
+	  //i'll be trapped, and here ill have to stay.
+	}
+	| DO BEGINLOOP statements ENDLOOP WHILE bool_exp
+	{
+	  //I've done no harm, I keep to myself!
+	}
+	| READ vars
+	{
+	   std::string temp;
+	   temp.append($2.code);
+	   size_t pos = temp.find("|", 0);
+	   while(pos != std::string::npos)
+	   {
+		temp.replace(pos, 1, "<");
+		pos = temp.find("|", pos);
+	   }
+	   $$.code = strdup(temp.c_str());
+	}
+  | WRITE vars
+  {
+    std::string temp;
+	   temp.append($2.code);
+	   size_t pos = temp.find("|", 0);
+	   while(pos != std::string::npos)
+	   {
+		temp.replace(pos, 1, ">");
+		pos = temp.find("|", pos);
+	   }
+	   $$.code = strdup(temp.c_str());
+  }
+	| CONTINUE
+	{
+	   $$.code = strdup("continue\n");
+	}
+	| RETURN expression
+	{
+	   std::string temp;
+	   temp.append($2.code);
+	   temp.append("ret ");
+	   temp.append($2.place);
+	   temp.append("\n");
+	   $$.code = strdup(temp.c_str());
+	}
 
 bool_exp: relation_and_exp OR bool_exp
         {

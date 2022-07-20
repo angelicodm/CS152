@@ -267,6 +267,15 @@ expression:  mult_exp ADD expression
           $$.code = strdup(temp.c_str);
           $$.place = strdup(dst.c_str);
         }
+        | mult_exp SUB expression
+        {
+          std::string temp;
+          std::string dst = new_temp();
+          temp.append($1.code);
+          temp.append($3.code);
+          temp += ". " + dst +"\n";
+        }
+        |
 
 mult_exp: term
         {
@@ -275,7 +284,121 @@ mult_exp: term
       
 term: var
         {
-
+          std::string dst = new_temp();
+          std::string temp;
+          if($1.arr)
+          {
+            temp.append($1.code);
+            temp.append(", ");
+            temp.append(dst);
+            temp.append("\n");
+            temp += "=[] " + dst + ", ";
+            temp.append($1.place);
+            temp.append("\n");
+          }
+          else
+          {
+            temp.append(". ");
+            temp.append(dst);
+            temp.append("\n");
+            temp = temp + "= " + dst + ", ";
+            temp.append($1.place);
+            temp.append("\n");
+            temp.append($1.code);
+          }
+          if(varTemp.find($1.place) != varTemp.end())
+          {
+            varTemp[$1.place] = dst;
+          }
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        | NUMBER
+        {
+          std::string dst = new_temp();
+          std::string temp;
+          temp.append(". ");
+          temp.append(dst);
+          temp.append("\n");
+          temp = temp + "= " + dst + ", " + std::to_string($1) + "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        | L_PAREN expression R_PAREN
+        {
+          $$.code = strdup($2.code);
+          $$.place = strdup($2.place);
+        }
+        | SUB var
+        {
+          std::string dst = new_temp();
+          std::string temp;
+          if($2.arr)
+          {
+            temp.append($2.code);
+            temp.append(". ");
+            temp.append(dst);
+            temp.append("\n");
+            temp += "=[] " + dst + ", ";
+            temp.append($2.place);
+            temp.append("\n");
+          }
+          else
+          {
+            temp.append(". ");
+            temp.append(dst);
+            temp.append("\n");
+            temp = temp + "= " + dst + ", ";
+            temp.append($2.place);
+            temp.append("\n");
+            temp.append($2.code);
+          }
+          if(varTemp.find($2.place) != varTemp.end())
+          {
+            varTemp[$2.place] = dst;
+          }
+          temp += "* " + dst + ", " + dst + ", -1\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        | SUB NUMBER
+        {
+          std::string dst = new_temp();
+          std::string temp;
+          temp.append(". ");
+          temp.append(dst);
+          temp.append("\n");
+          temp = temp + "= " + dst + ", -" + std::to_string($2) + "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
+        }
+        | SUB L_PAREN expression R_PAREN
+        {
+          std::string temp;
+          temp.append($3.code);
+          temp.append("* ");
+          temp.append($3.place);
+          temp.append(", ");
+          temp.append($3.place);
+          temp.append(", -1\n");
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup($3.place);
+        }
+        | ident L_PAREN expressions R_PAREN
+        {
+          std::string temp;
+          std::string func = $1.place;
+          if(funcs.find(func) == finc.end())
+          {
+            printf("Calling undeclared function %s.\n", func.c_str());
+          }
+          std::string dst = new_temp();
+          temp.append($3.code);
+          temp += ". " + dst + "\ncall";
+          temp.append($1.place);
+          temp += ", " + dst + "\n";
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
         }
 
 var: ident

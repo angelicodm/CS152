@@ -151,7 +151,7 @@ declaration: identifiers COLON INTEGER
 identifiers: ident
         {
           $$.code = strdup("");
-          $$.place = strdup($1.place)
+          $$.place = strdup($1.place);
         }
         | ident COMMA identifiers
         {
@@ -168,7 +168,7 @@ identifiers: ident
 ident: IDENT
         {
           $$.code = strdup("");
-          $$.place = strdup($1.place)
+          $$.place = strdup($1);
         };
 
 statements: statement SEMICOLON statements
@@ -178,12 +178,12 @@ statements: statement SEMICOLON statements
           temp.append($3.code);
 
           $$.code = strdup(temp.c_str());
-          $$.place = strdup("");
+          
         }
         | %empty
         {
           $$.code = strdup("");
-          $$.place = strdup("");
+       
         }
         ;
 
@@ -331,8 +331,8 @@ expression:  mult_exp ADD expression
           temp += ", ";
           temp.append($3.place);
           temp += "\n";
-          $$.code = strdup(temp.c_str);
-          $$.place = strdup(dst.c_str);
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
         }
         | mult_exp SUB expression
         {
@@ -520,7 +520,7 @@ term: var
         {
           std::string temp;
           std::string func = $1.place;
-          if(funcs.find(func) == finc.end())
+          if(funcs.find(func) == funcs.end())
           {
             printf("Calling undeclared function %s.\n", func.c_str());
           }
@@ -639,7 +639,7 @@ int main(int argc, char **argv) {
 
 void yyerror(const char *msg) 
 {
-  extern int yyline;
+  extern int yylineno;
   extern char *yytext;
 
   printf("%s on line %d at char %d at symbol \"%s\"\n", msg, yylineno, currPos, yytext);
@@ -656,6 +656,6 @@ return t;
 std::string new_label()
 {
   std::string l = "L" + std::to_string(labelCount);
-  labelCount++
+  labelCount++;
   return l;
 }

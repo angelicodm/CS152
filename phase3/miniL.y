@@ -150,18 +150,42 @@ declaration: identifiers COLON INTEGER
 
 identifiers: ident
         {
+          $$.code = strdup("");
+          $$.place = strdup($1.place)
+        }
+        | ident COMMA identifiers
+        {
+          std::string temp;
+          temp.append($1.place);
+          temp.append(".| \n"); //NEED TO REMOVE NEWLINE??
+          temp.append($3.place);
 
-        };
+          $$.code = strdup("");
+          $$.place = strdup(temp.c_str());
+        }
+        ;
 
 ident: IDENT
         {
-
+          $$.code = strdup("");
+          $$.place = strdup($1.place)
         };
 
 statements: statement SEMICOLON statements
         {
+          std::string temp;
+          temp.append($1.code);
+          temp.append($3.code);
 
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup("");
         }
+        | %empty
+        {
+          $$.code = strdup("");
+          $$.place = strdup("");
+        }
+        ;
 
 statement: var ASSIGN expression
         {
@@ -170,8 +194,25 @@ statement: var ASSIGN expression
 
 bool_exp: relation_and_exp OR bool_exp
         {
-
+          std::string temp;
+          std::string dst = new_temp();
+          temp.append($1.code);
+          temp.append($3.code);
+          temp += ". " + dst + "\n";
+          temp += "|| " + dst + ", ";
+          temp.append($1.place);
+          temp.append(", ");
+          temp.append($3.place);
+          temp.append("\n");
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup(dst.c_str());
         }
+        | relation_and_exp
+        {
+          $$.code = strdup($1.code);
+          $$.place = strdup($1.place);
+        }
+        ;
 
 relation_and_exp: relation_exp AND relation_and_exp
         {
@@ -212,6 +253,8 @@ relation_exp_inv: NOT relation_exp_inv
           $$.code = strdup($1.code);
           $$.code = strdup($1.place);
         }
+        ;
+
 relation_exp: expression comp expression
         {
           std::string dst = new_temp();

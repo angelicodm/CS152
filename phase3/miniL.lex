@@ -1,6 +1,6 @@
-   /* cs152-miniL */
-   /* cs152-miniL phase1 */
-      /* cs152-miniL phase1 */
+/* cs152-miniL */
+/* cs152-miniL phase1 */
+/* cs152-miniL phase1 */
 %{
 /* write your C code here for definitions of variables and including headers */
 #include "miniL-parser.hpp"
@@ -11,10 +11,10 @@ int currLine = 1, currPos = 1;
 
 %}
 
- /* some common rules */
+/* some common rules */
 
 DIGIT   [0-9]
-                                /*if he hears he'll knock all day*/
+/*if he hears he'll knock all day*/
 COMMENT ##.*
 
 

@@ -130,45 +130,86 @@ declarations: declaration SEMICOLON declarations
         }
         | %empty
         {
-          $$.code = strdup("");
           $$.place = strdup("");
+          $$.code = strdup("");
         };
 
 declaration: identifiers COLON INTEGER
         {
+          int left = 0;
+          int right = 0;
           std::string temp;
-          std::string ident = $1.place;
+          std::string parse($1.place);
+          bool ex = false;
+          while(!ex)
+          {
+            right = parse.find("|", left);
+            temp.append(". ");
+            if(right == std::string::npos)
+            {
+              std::string ident = parse.substr(left, right);
+              if(reserved.find(ident) != reserved.end())
+              {
+                printf("Identifier %s's name is a reserved word.\n", ident.c_str());
+              }
+              if(funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end())
+              {
+                printf("Identifier %s is previosuly declared.\n", ident.c_str());
+              }
+              else
+              {
+                varTemp[ident] = ident;
+                arrSize[ident] = 1;
+              }
+              temp.append(ident);
+              ex = true;
+            }
+            else
+            {
+              std::string ident = parse.substr(left, right-left);
+              if(reserved.find(ident) != reserved.end())
+              {
+                printf("Identifier %s's name is a reserved word.\n", ident.c_str());
+              }
+              if(funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end())
+              {
+                printf("Identifier %s is previously declared.\n", ident.c_str());
+              }
+              else
+              {
+                varTemp[ident] = ident;
+                arrSize[ident] = 1;
+              }
+            }
+          }
         }
         | identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER
         {
 
         }
-        | identifiers COLON ENUM L_PAREN identifiers R_PAREN
-        {
-
-        };
+        ;
 
 identifiers: ident
         {
-          $$.code = strdup("");
           $$.place = strdup($1.place);
+          $$.code = strdup("");
         }
         | ident COMMA identifiers
         {
           std::string temp;
           temp.append($1.place);
-          temp.append(".| \n"); //NEED TO REMOVE NEWLINE??
+          temp.append("| "); 
           temp.append($3.place);
 
-          $$.code = strdup("");
           $$.place = strdup(temp.c_str());
+          $$.code = strdup("");
         }
         ;
 
 ident: IDENT
         {
-          $$.code = strdup("");
           $$.place = strdup($1);
+          $$.code = strdup("");
         };
 
 statements: statement SEMICOLON statements
@@ -182,8 +223,7 @@ statements: statement SEMICOLON statements
         }
         | %empty
         {
-          $$.code = strdup("");
-       
+          $$.code = strdup($1.code);       
         }
         ;
 

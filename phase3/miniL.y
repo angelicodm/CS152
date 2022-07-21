@@ -180,12 +180,70 @@ declaration: identifiers COLON INTEGER
                 varTemp[ident] = ident;
                 arrSize[ident] = 1;
               }
+
             }
           }
+
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup("");
         }
         | identifiers COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER
         {
+          int left = 0;
+          int right = 0;
+          std::string temp;
+          std::string parse($1.place);
+          bool ex = false;
 
+          if ($5 <= 0)
+          {
+            printf("Invalid array size.\n");
+            ex = true;
+          }
+          while(!ex)
+          {
+            right = parse.find("|", left);
+            temp.append(". ");
+            if(right == std::string::npos)
+            {
+              std::string ident = parse.substr(left, right);
+              if(reserved.find(ident) != reserved.end())
+              {
+                printf("Identifier %s's name is a reserved word.\n", ident.c_str());
+              }
+              if(funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end())
+              {
+                printf("Identifier %s is previosuly declared.\n", ident.c_str());
+              }
+              else
+              {
+                varTemp[ident] = ident;
+                arrSize[ident] = 1;
+              }
+              temp.append(ident);
+              ex = true;
+            }
+            else
+            {
+              std::string ident = parse.substr(left, right-left);
+              if(reserved.find(ident) != reserved.end())
+              {
+                printf("Identifier %s's name is a reserved word.\n", ident.c_str());
+              }
+              if(funcs.find(ident) != funcs.end() || varTemp.find(ident) != varTemp.end())
+              {
+                printf("Identifier %s is previously declared.\n", ident.c_str());
+              }
+              else
+              {
+                varTemp[ident] = ident;
+                arrSize[ident] = 1;
+              }
+            }
+          }
+
+          $$.code = strdup(temp.c_str());
+          $$.place = strdup("");
         }
         ;
 

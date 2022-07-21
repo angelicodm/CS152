@@ -287,64 +287,169 @@ statements: statement SEMICOLON statements
 
 statement: var ASSIGN expression
         {
+          std::string temp;
+          temp.append($1.code);
+          temp.append($3.code);
+          std::string newExp = $3.place;
+          temp.append("= ");
+          temp.append($1.place);
+          temp.append(", ");
+          temp.append(newExp);
+          temp.append("\n");
 
+          $$.code = strdup(temp.c_str());
+          //$$.place = strdup(""); //has no member named place
         }
+        | IF bool_exp THEN statements ENDIF
         {
-	   //who can it be knocking at my door??	
-	}
-	| IF bool_exp THEN statements ENDIF
-	{
-	  //make no sound... tip-toe across the floor...
-	}
-	| IF bool_exp THEN statements ELSE statements ENDIF
-	{
-	  //if he hears, he'll knock all day!
-	}
-	| WHILE bool_exp BEGINLOOP statements ENDLOOP
-	{
-	  //i'll be trapped, and here ill have to stay.
-	}
-	| DO BEGINLOOP statements ENDLOOP WHILE bool_exp
-	{
-	  //I've done no harm, I keep to myself!
-	}
-	| READ vars
-	{
-	   std::string temp;
-	   temp.append($2.code);
-	   size_t pos = temp.find("|", 0);
-	   while(pos != std::string::npos)
-	   {
-		temp.replace(pos, 1, "<");
-		pos = temp.find("|", pos);
-	   }
-	   $$.code = strdup(temp.c_str());
-	}
-  | WRITE vars
-  {
-    std::string temp;
-	   temp.append($2.code);
-	   size_t pos = temp.find("|", 0);
-	   while(pos != std::string::npos)
-	   {
-		temp.replace(pos, 1, ">");
-		pos = temp.find("|", pos);
-	   }
-	   $$.code = strdup(temp.c_str());
-  }
-	| CONTINUE
-	{
-	   $$.code = strdup("continue\n");
-	}
-	| RETURN expression
-	{
-	   std::string temp;
-	   temp.append($2.code);
-	   temp.append("ret ");
-	   temp.append($2.place);
-	   temp.append("\n");
-	   $$.code = strdup(temp.c_str());
-	}
+          std::string temp;
+          std::string L1 = new_label(); //then
+          std::string L2 = new_label(); //endif
+
+          temp.append($2.code);
+          temp.append("?:= ");
+          temp.append(L1);
+          temp.append(", ");
+          temp.append($2.place);
+          temp.append("\n");
+
+          temp.append($4.code);
+          temp.append(": ");
+          temp.append(L2);
+          temp.append("\n");
+
+          $$.code = strdup(temp.c_str());
+          //$$.place = strdup(""); ////has no member named place
+        }
+	      | IF bool_exp THEN statements ELSE statements ENDIF
+	      {
+	        std::string temp;
+          std::string L1 = new_label(); //then
+          std::string L2 = new_label(); //else
+          std::string L3 = new_label(); //endif
+
+          temp.append($2.code);
+          temp.append("?:= ");
+          temp.append(L1);
+          temp.append(", ");
+          temp.append($2.place);
+          temp.append("\n");
+
+          temp.append($6.code);
+          temp.append(":= ");
+          temp.append(L3);
+          temp.append("\n");
+
+          temp.append($4.code);
+          temp.append(": ");
+          temp.append(L2);
+          temp.append("\n");
+
+          $$.code = strdup(temp.c_str());
+          //$$.place = strdup(""); ////has no member named place
+	      }
+	      | WHILE bool_exp BEGINLOOP statements ENDLOOP
+	      {
+	        std::string temp;
+          std::string L1 = new_label(); //while
+          std::string L2 = new_label(); //beginloop
+          std::string L3 = new_label(); //endloop
+
+          std::string L4 = $4.code; //statements
+          size_t pos = temp.find("|", 0);
+          while(pos != std::string::npos)
+          {
+            L4.replace(pos, 0, "");
+          }
+
+          temp.append(": ");
+          temp.append(L1); //begin while loop
+          temp.append("\n");
+          temp.append($2.code);
+          temp.append("?:= ");
+          temp.append(L2); //beginLoop
+          temp.append(", ");
+          temp.append($2.place);
+          temp.append("\n");
+          temp.append(":= ");
+          temp.append(L3); //endLoop but not really
+          temp.append("\n: ");
+          temp.append(L2);
+          temp.append(", ");
+          temp.append(L4);
+          temp.append("\n");
+
+          $$.code = strdup(temp.c_str());
+          //$$.place = strdup(""): ////has no member named place
+	      }
+	      | DO BEGINLOOP statements ENDLOOP WHILE bool_exp
+	      {
+	       std::string temp;
+         std::string L1 = new_label(); //beginLoop
+         std::string L2 = $3.code; // statements
+         std::string L3 = new_label(); //endLoop
+         std::string L4 = new_label(); //while
+
+         size_t pos = temp.find("|", 0);
+          while(pos != std::string::npos)
+          {
+            L4.replace(pos, 0, "");
+          }
+
+          temp.append(": ");
+          temp.append(L1); //beginLoop
+          temp.append("\n");
+          temp.append(L2);
+          temp.append(": ");
+          temp.append(L4); //while
+          temp.append("\n");
+          temp.append($6.code);
+          temp.append("?:= ");
+          temp.append(L1); //beginLoop
+          temp.append(", ");
+          temp.append($6.place);
+          temp.append("\n");
+
+          $$.code = strdup(temp.c_str());
+          //$$.place = strdup(""); //has no member named place
+	      }
+      	| READ vars
+	      {
+	         std::string temp;
+	         temp.append($2.code);
+	         size_t pos = temp.find("|", 0);
+	         while(pos != std::string::npos)
+	         {
+           		temp.replace(pos, 1, "<");
+	           	pos = temp.find("|", pos);
+      	   }
+	        $$.code = strdup(temp.c_str());
+	        }
+         | WRITE vars
+         {
+           std::string temp;
+	        temp.append($2.code);
+	        size_t pos = temp.find("|", 0);
+	         while(pos != std::string::npos)
+	         {
+	        	temp.replace(pos, 1, ">");
+	        	pos = temp.find("|", pos);
+	         }
+	         $$.code = strdup(temp.c_str());
+         }
+      	| CONTINUE
+      	{
+      	   $$.code = strdup("continue\n");
+      	}
+	      | RETURN expression
+      	{
+      	   std::string temp;
+      	   temp.append($2.code);
+	         temp.append("ret ");
+	         temp.append($2.place);
+	         temp.append("\n");
+	         $$.code = strdup(temp.c_str());
+	      }
 
 bool_exp: relation_and_exp OR bool_exp
         {
